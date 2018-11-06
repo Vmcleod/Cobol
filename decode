@@ -1,0 +1,455 @@
+ IDENTIFICATION DIVISION.                         
+ PROGRAM-ID.       PROG2.                         
+                                                  
+ ENVIRONMENT DIVISION.                            
+ INPUT-OUTPUT SECTION.                            
+ FILE-CONTROL.                                    
+     SELECT LETTERFILE        ASSIGN TO ABCFILE.  
+     SELECT ENCODEFILE        ASSIGN TO ENCODE.   
+     SELECT DECODEFILE        ASSIGN TO DECODE.   
+                                                  
+ DATA DIVISION.                                   
+ FILE SECTION.                                    
+                                                  
+ FD  LETTERFILE                                   
+     RECORDING MODE IS F                          
+     RECORD CONTAINS 80 CHARACTERS                
+     BLOCK CONTAINS 0 RECORDS.                    
+                                                  
+ 01  LETTER-RECORD.                               
+     05 LETTER-NAME          PIC X(1).            
+     05 CODES               PIC X(2).             
+     05                     PIC X(77).            
+                                                  
+ FD  ENCODEFILE                                   
+     RECORDING MODE IS F                          
+     RECORD CONTAINS 80 CHARACTERS                
+     BLOCK CONTAINS 0 RECORDS.                    
+                                                  
+ 01  ENCODE-RECORD.                               
+     05 EN-CHR01            PIC XX.               
+     05 EN-CHR02            PIC XX.               
+     05 EN-CHR03            PIC XX.               
+     05 EN-CHR04            PIC XX.               
+     05 EN-CHR05            PIC XX.               
+     05 EN-CHR06            PIC XX.               
+     05 EN-CHR07            PIC XX.               
+     05 EN-CHR08            PIC XX.               
+     05 EN-CHR09            PIC XX.               
+     05 EN-CHR10            PIC XX.               
+     05 EN-CHR11            PIC XX.               
+     05 EN-CHR12            PIC XX.                
+     05 EN-CHR13            PIC XX.                
+     05 EN-CHR14            PIC XX.                
+     05 EN-CHR15            PIC XX.                
+     05 EN-CHR16            PIC XX.                
+     05 EN-CHR17            PIC XX.                
+     05 EN-CHR18            PIC XX.                
+     05 EN-CHR19            PIC XX.                
+     05 EN-CHR20            PIC XX.                
+     05 EN-CHR21            PIC XX.                
+     05 EN-CHR22            PIC XX.                
+     05 EN-CHR23            PIC XX.                
+     05 EN-CHR24            PIC XX.                
+     05 EN-CHR25            PIC XX.                
+     05 EN-CHR26            PIC XX.                
+     05 EN-CHR27            PIC XX.                
+     05 EN-CHR28            PIC XX.                
+     05 EN-CHR29            PIC XX.                
+     05 EN-CHR30            PIC XX.                
+     05 EN-CHR31            PIC XX.                
+     05 EN-CHR32            PIC XX.                
+     05 EN-CHR33            PIC XX.                
+     05 EN-CHR34            PIC XX.                
+     05 EN-CHR35            PIC XX.                
+     05 EN-CHR36            PIC XX.                
+     05 EN-CHR37            PIC XX.                
+     05 EN-CHR38            PIC XX.                
+     05 EN-CHR39            PIC XX.                
+     05 EN-CHR40            PIC XX.                
+                                                   
+ FD  DECODEFILE                                    
+     RECORDING MODE IS F                           
+     RECORD CONTAINS 80 CHARACTERS                 
+     BLOCK CONTAINS 0 RECORDS.                     
+                                                   
+ 01  DECODE-RECORD            PIC X(80).           
+                                                   
+ WORKING-STORAGE SECTION.                          
+ 01  SWITCHES.                                     
+     05 LETTER-SWITCH          PIC X VALUE 'Y'.    
+        88 MORE-LETTERS              VALUE 'Y'.      
+        88 NO-MORE-LETTERS           VALUE 'N'.    
+                                                   
+ 01  COUNTERS.                                     
+     05 A-COUNT             PIC 99 VALUE 0.        
+                                                    
+ 01  SUBSCRIPTS.                                   
+     05 A-SUB               PIC S9(2) COMP VALUE 0.
+                                                   
+ 01  ALPHA-TABLE           VALUE ALL 'X'.          
+     05 ABC-GROUP           OCCURS 99 TIMES.       
+        10 ABC-CHAR         PIC X.                 
+        10 NUM-CODE         PIC X(02).             
+                                                   
+ 01  WS-DECODED-MSG1.                              
+     05 WS-DCHR01           PIC X.                 
+     05 WS-DCHR02           PIC X.                 
+     05 WS-DCHR03           PIC X.                 
+     05 WS-DCHR04           PIC X.                 
+     05 WS-DCHR05           PIC X.                 
+     05 WS-DCHR06           PIC X.                 
+     05 WS-DCHR07           PIC X.                 
+     05 WS-DCHR08           PIC X.                 
+     05 WS-DCHR09           PIC X.                 
+     05 WS-DCHR10           PIC X.                 
+     05 WS-DCHR11           PIC X.                 
+     05 WS-DCHR12           PIC X.                 
+     05 WS-DCHR13           PIC X.                 
+     05 WS-DCHR14           PIC X.                 
+     05 WS-DCHR15           PIC X.                 
+     05 WS-DCHR16           PIC X.                 
+     05 WS-DCHR17           PIC X.                 
+     05 WS-DCHR18           PIC X.                 
+     05 WS-DCHR19           PIC X.                 
+     05 WS-DCHR20           PIC X.                 
+     05 WS-DCHR21           PIC X.                 
+     05 WS-DCHR22           PIC X.                 
+     05 WS-DCHR23           PIC X.                 
+     05 WS-DCHR24           PIC X.                 
+     05 WS-DCHR25           PIC X.                 
+     05 WS-DCHR26           PIC X.                 
+     05 WS-DCHR27           PIC X.   
+     05 WS-DCHR28           PIC X.              
+     05 WS-DCHR29           PIC X.              
+     05 WS-DCHR30           PIC X.              
+     05 WS-DCHR31           PIC X.              
+     05 WS-DCHR32           PIC X.              
+     05 WS-DCHR33           PIC X.              
+     05 WS-DCHR34           PIC X.              
+     05 WS-DCHR35           PIC X.              
+     05 WS-DCHR36           PIC X.              
+     05 WS-DCHR37           PIC X.              
+     05 WS-DCHR38           PIC X.              
+     05 WS-DCHR39           PIC X.              
+     05 WS-DCHR40           PIC X.              
+     05 WS-DCHR41           PIC X.              
+     05 WS-DCHR42           PIC X.              
+     05 WS-DCHR43           PIC X.              
+     05 WS-DCHR44           PIC X.              
+     05 WS-DCHR45           PIC X.              
+     05 WS-DCHR46           PIC X.              
+     05 WS-DCHR47           PIC X.              
+     05 WS-DCHR48           PIC X.              
+     05 WS-DCHR49           PIC X.              
+     05 WS-DCHR50           PIC X.              
+     05 WS-DCHR51           PIC X.              
+     05 WS-DCHR52           PIC X.              
+     05 WS-DCHR53           PIC X.              
+     05 WS-DCHR54           PIC X.              
+     05 WS-DCHR55           PIC X.              
+     05 WS-DCHR56           PIC X.              
+     05 WS-DCHR57           PIC X.              
+     05 WS-DCHR58           PIC X.              
+     05 WS-DCHR59           PIC X.              
+     05 WS-DCHR60           PIC X.              
+     05 WS-DCHR61           PIC X.              
+     05 WS-DCHR62           PIC X.              
+     05 WS-DCHR63           PIC X.              
+     05 WS-DCHR64           PIC X.              
+     05 WS-DCHR65           PIC X.              
+     05 WS-DCHR66           PIC X.              
+     05 WS-DCHR67           PIC X.              
+     05 WS-DCHR68           PIC X.                  
+     05 WS-DCHR69           PIC X.                             
+     05 WS-DCHR70           PIC X.                             
+     05 WS-DCHR71           PIC X.                             
+     05 WS-DCHR72           PIC X.                             
+     05 WS-DCHR73           PIC X.                             
+     05 WS-DCHR74           PIC X.                             
+     05 WS-DCHR75           PIC X.                             
+     05 WS-DCHR76           PIC X.                             
+     05 WS-DCHR77           PIC X.                             
+     05 WS-DCHR78           PIC X.                             
+     05 WS-DCHR79           PIC X.                             
+     05 WS-DCHR80           PIC X.                             
+                                                                 
+ PROCEDURE DIVISION.                                           
+                                                                 
+     PERFORM 0100-INITIALIZE.                                  
+     PERFORM 0200-LOAD-ALPHA-TABLE UNTIL NO-MORE-LETTERS.      
+     PERFORM 0300-DECODE-MSG.                                  
+     PERFORM 0400-END-ROUTINE.                                 
+                                                                 
+    0100-INITIALIZE.                                           
+     OPEN INPUT LETTERFILE ENCODEFILE                          
+          OUTPUT DECODEFILE.                                   
+                                                                 
+    0200-LOAD-ALPHA-TABLE.                                     
+          PERFORM 0225-ALPHA-CODES.                            
+           IF MORE-LETTERS                                     
+             PERFORM 0250-PROCESS-LETTERS.                     
+                                                                 
+    0225-ALPHA-CODES.                                          
+          READ LETTERFILE                                      
+           AT END MOVE 'N'     TO LETTER-SWITCH                
+                  MOVE 1       TO A-SUB.                       
+                                                                 
+    0250-PROCESS-LETTERS.                                      
+          ADD +1               TO A-SUB                        
+          MOVE LETTER-NAME     TO ABC-CHAR(A-SUB).             
+          MOVE CODES           TO NUM-CODE(A-SUB).             
+          DISPLAY                                              
+         'ALPHA ' ABC-CHAR(A-SUB) ' CODE ' NUM-CODE(A-SUB).    
+         
+    0300-DECODE-MSG.                                            
+          READ ENCODEFILE.                                       
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR01.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR01.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR02.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR02.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR03.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR03.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR04.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR04.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR05.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR05.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR06.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR06.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR07.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR07.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR08.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR08.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR09.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR09.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR10.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR10.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR11.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR11.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR12.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR12.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR13.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR13.                     
+          INITIALIZE SUBSCRIPTS.  
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR14.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR14.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR15.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR15.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR16.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR16.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR17.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR17.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR18.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR18.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR19.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR19.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR20.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR20.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR21.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR21.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR22.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR22.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR23.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR23.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR24.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR24.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR25.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR25.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR26.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR26.                   
+          INITIALIZE SUBSCRIPTS.                               
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR27.
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR27.                   
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR28. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR28.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR29. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR29.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR30. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR30.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR31. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR31.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR32. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR32.                      
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR33. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR33.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR34. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR34.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR35. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR35.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR36. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR36.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR37. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR37.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR38. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR38.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR39. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR39.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR40. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR40.                    
+          INITIALIZE SUBSCRIPTS.                                
+          READ ENCODEFILE.                                      
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR01. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR41.                    
+          INITIALIZE SUBSCRIPTS.                                  
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR02. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR42.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR03. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR43.                    
+          INITIALIZE SUBSCRIPTS.                                      
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR04. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR44.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR05. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR45.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR06. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR46.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR07. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR47.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR08. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR48.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR09. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR49.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR10.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR50.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR11. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR51.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR12. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR52.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR13. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR53.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR14. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR54. 
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR15. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR55.                     
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR16. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR56.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR17. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR57.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR18. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR58.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR19. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR59.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR20. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR60.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR21. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR61.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR22. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR62.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR23.   
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR63.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR24. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR64.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR25. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR65.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR26. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR66.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR27. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR67.                    
+          INITIALIZE SUBSCRIPTS.                                
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR28. 
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR68.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR29.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR69.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR30.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR70.                       
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR31.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR71.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR32.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR72.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR33.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR73.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR34.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR74.                      
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR35.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR75.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR36.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR76.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR37.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR77.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR38.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR78.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR39.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR79.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          PERFORM 0325-DECODE UNTIL NUM-CODE(A-SUB) = EN-CHR40.  
+          MOVE ABC-CHAR(A-SUB) TO WS-DCHR80.                     
+          INITIALIZE SUBSCRIPTS.                                 
+          WRITE DECODE-RECORD FROM WS-DECODED-MSG1.              
+                                                              
+    0325-DECODE.                                
+         ADD 1                 TO A-SUB. 
+           
+    0400-END-ROUTINE.                           
+         CLOSE LETTERFILE ENCODEFILE DECODEFILE.    
+         STOP RUN.   
